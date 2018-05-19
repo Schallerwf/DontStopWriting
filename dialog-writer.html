@@ -868,23 +868,19 @@ there.
 <body>
     <br />
     <div style="margin:0% 5% 0% 5%;text-align:right;">
-        <a style="margin:0% 5% 0% 5%;text-decoration:none;" href="dialog-writer.html">Dialog Writer</a>
+        <a style="margin:0% 5% 0% 5%;text-decoration:none;" href="index.html">Home</a>
     </div>
-    <center><h2>Don't Stop Writing</h2></center>
+    <center><h2>Don't Stop Writing: Dialog Writer</h2></center>
     <div style="width:100%; text-align:right;">
       <a onclick='toggleSettings()' id="settingsButton" style="padding-right:10%;text-decoration:none;">Show Settings</a>
     </div>
     
     <div style="display:none;padding:1% 1% 1% 5%;margin:0% 5% 0% 5%;border:1px solid black;" id="settings">
-      <div style="display:inline-block;width:50%;">
-      <strong>Time Limit:</strong> <input type="text" value="3" style="width:50px;" id="timeInput"></input> seconds.
+        <div style="display:inline-block;width:50%;">
+      <strong>Randomly Select Character:</strong> <input type="checkbox" id="randomCharacter" onclick="toggleRandomCharacter()"/>
       <br />
-      <strong>Dark Theme:</strong> <input onclick='toggleStyle()' type="checkbox"/>
-      <br />
-      <strong>Backspaces Count:</strong> <input type="checkbox" id="backspacesCount" onclick="toggleBackspacesCount()"/>
-      <br />
-      <strong>Random Prompt:</strong> <input id="textPromptBox" onclick='toggleTextPrompt()' type="checkbox"/>
-      </div>
+      <strong>Cycle Through Characters:</strong> <input type="checkbox" id="roundRobinCharacter" onclick="toggleCycleCharacter()" checked="true"/>
+  </div>
       <div style="display:inline-block;">
         <a href="#" download>Download</a> this webpage and use it offline.
         <br />
@@ -895,16 +891,19 @@ there.
     </div>
     <center><i><h4 id="textPrompt" style="display:none;margin:1% 1% 1% 1%;"></h4></i></center>
     <br />
-    <div id="barHolder">
-      <div id="bar"></div>
-    </div>
     <br />
     <center>
-    <textarea style="width:80%;height:60%;" id="textarea"></textarea>
+        <p id="characters"> Characters: </p>
+        <input type"text" id="characterInput" onkeypress="onNewCharacter();"></input>
+       <button onclick="addCharacter()">Add Character</button>
     </center>
     <br />
     <div id="log" style="margin:0% 5% 0% 5%;">
     </div>
+    <center>
+        <h4 id="currentCharacter"> Current Character: </h4>
+        <textarea style="width:80%;height:60%;" id="textarea" onkeypress="onInput();"></textarea>
+    </center>
     <br />
     <br />
     <br />
@@ -915,120 +914,60 @@ function now() {
   return d.getTime();
 }
 
-var subjects = [
-"teenage lifeguard ",
-"hobo ",
-"coffee barista ",
-"living chair ",
-"talking puppy ",
-"woman ",
-"man",
-"child ",
-"President ",
-"parole officer ",
-"police officer ",
-"talking hamster ",
-"talking donut ",
-"professional athlete ",
-"ghost ",
-"movie star ",
-"computer hacker ",
-"convicted felon ",
-"preschool teacher ",
-"college professor ",
-"CIA agent ",
-"zombie ",
-"baby ",
-"zookeeper ",
-"college student ",
-];
-
-var locations = [
-"at the mall.",
-"on a roller coaster.",
-"in a bathroom.",
-"at the hospital.",
-"at a waterpark.",
-"in an elevator.",
-"at school.",
-"on a bus.",
-"at a funeral.",
-"in a castle.",
-"at a bank.",
-"at a deli.",
-"at a cafe.",
-"at the beach.",
-"in a courtroom.",
-"in bootcamp.",
-"at the store.",
-"at the museum.",
-"in traffic.",
-"while climbing a tree."
-];
-
-var actions = [
-"is having a bad day ",
-"is having a hard time ",
-"is having a great time ",
-"is giving birth ",
-"is in a fight ",
-"is falling in love ",
-"is arguing with someone ",
-"is going to meet someone ",
-"is planning a murder ",
-"is being hunted ",
-"is receiving an award ",
-"is being fired "
-]
+var ROUND_ROBIN = "rr";
+var RANDOM = "r";
 
 var g_darkTheme = false;
 var g_showSettings = false;
-var g_startTime = now();
-var g_timeOfLast = now();
-var g_timeLimit = 3 * 1000;
-var g_text = '';
-var g_backspacesCount = false;
-var g_lost = false;
-var g_started = false;
-var g_textPromptEnabled = false;
-var g_textPrompt = randomTextPrompt();
+var g_characterSelectMode = ROUND_ROBIN;
+var g_characters = []
+var g_curCharacter = 0;
+
+var randomCheck = document.getElementById("randomCharacter");
+var cycleCheck = document.getElementById("roundRobinCharacter");
+
+function toggleRandomCharacter() {
+    if (randomCheck.checked) {
+        g_characterSelectMode = RANDOM;
+        cycleCheck.checked = false;
+    } else {
+        g_characterSelectMode = ROUND_ROBIN;
+        cycleCheck.checked = true;
+    }
+}
+
+function toggleCycleCharacter() {
+    if (cycleCheck.checked) {
+        g_characterSelectMode = ROUND_ROBIN;
+        randomCheck.checked = false;
+    } else {
+        g_characterSelectMode = RANDOM;
+        randomCheck.checked = true;
+    }
+}
+
+function onNewCharacter() {
+    var key = window.event.keyCode;
+
+    if (key === 13) { 
+        addCharacter();
+    }
+}
+
+function onInput() {
+    var key = window.event.keyCode;
+
+    if (key === 13) {
+        var log = document.getElementById("log");
+        var text = document.getElementById("textarea");
+        log.innerHTML += "<p><strong>" + g_characters[g_curCharacter] +"</strong> : "+textarea.value+"</p>";
+        nextCharacter();
+        text.value = "";
+    }
+}
 
 function getRandomInt(min, max) {
     return Math.floor(Math.random() * (max - min + 1)) + min;
-}
-
-function randomTextPrompt() {
-  var subject = subjects[Math.floor(Math.random() * subjects.length)];
-  var location = locations[Math.floor(Math.random() * locations.length)];
-  var action = actions[Math.floor(Math.random() * actions.length)];
-  return 'A ' + subject + action + location;
-}
-
-function setPrompt() {
-  g_textPrompt = randomTextPrompt();
-}
-
-function displayPrompt() {
-  textPromptElem = document.getElementById('textPrompt');
-
-  if (g_textPromptEnabled) {
-    textPromptElem.innerHTML = g_textPrompt;
-    textPromptElem.style.display = 'block';
-  } else {
-    textPromptElem.style.display = 'none';
-  } 
-}
-
-function toggleTextPrompt() {
-  var elem = document.getElementById('textPromptBox');
-  g_textPromptEnabled = elem.checked;
-  g_textPrompt = randomTextPrompt();
-  displayPrompt();
-}
-
-function toggleBackspacesCount() {
-  var elem = document.getElementById('backspacesCount');
-  g_backspacesCount = elem.checked;
 }
 
 function toggleStyle() {
@@ -1052,6 +991,61 @@ function toggleStyle() {
   }
 }
 
+function addCharacter() {
+    var elem = document.getElementById('characterInput');
+    var characterName = elem.value;
+    g_characters.push(characterName);
+    updateCharacters();
+    updateCharacter();
+    elem.value = "";
+}
+
+function selectCharacter(ndx) {
+    g_curCharacter = ndx;
+    updateCharacter();
+}
+
+function updateCharacters() {
+    var s = ""
+    for (var ndx = 0; ndx < g_characters.length; ndx++) {
+        var t = "<a onclick='selectCharacter("+ndx+")'>"+g_characters[ndx]+"</a>";
+        if (ndx > 0) {
+            s = s + "&nbsp-&nbsp" + t;
+        } else {
+            s = t;
+        }
+    }
+    var elem = document.getElementById("characters");
+    var randomString = "<a onclick='randomCharacter()'>Random</a>"
+    elem.innerHTML = "Characters: " + s + "     | " + randomString;
+}
+
+function randomCharacter() {
+    var tmp = getRandomInt(0, g_characters.length - 1);
+    while (tmp == g_curCharacter) {
+        tmp = getRandomInt(0, g_characters.length - 1);
+    }
+    g_curCharacter = tmp;
+    updateCharacter();
+}
+
+function nextCharacter() {
+    if (g_characters.length > 1) {
+        console.log(g_characterSelectMode);
+        if (g_characterSelectMode == ROUND_ROBIN) {
+            g_curCharacter = (g_curCharacter + 1) % g_characters.length
+            updateCharacter();
+        } else {
+            randomCharacter();
+        }
+    }
+}
+
+function updateCharacter() {
+    var elem = document.getElementById("currentCharacter");
+    elem.innerHTML = "Current Character: " + g_characters[g_curCharacter]
+}
+
 function toggleSettings() {
   var elem = document.getElementById('settings');
   var button = document.getElementById('settingsButton');
@@ -1066,69 +1060,6 @@ function toggleSettings() {
   }
 }
 
-function setBar(nowMillis) {
-  var timeSinceLast = nowMillis - g_timeOfLast;
-  var elem = document.getElementById("bar");
-
-  if (timeSinceLast > g_timeLimit) {
-    elem.style.width = '100%';
-    elem.style.backgroundColor = 'red';
-
-    if (!g_lost) {
-      var totalTime = (nowMillis - g_startTime) / 1000;
-      var log = document.getElementById('log');
-      var prompt = g_textPromptEnabled ? '<p><strong>'+g_textPrompt+'</strong></p>' : '';
-      log.innerHTML = log.innerHTML + '<div style="border:1px solid black;padding: 1% 1% 0% 1%">'
-      +prompt+'<p>'+g_text+'</p><p><i>Written in ' + totalTime + ' seconds.</i></p></div><br />';
-      g_lost = true;
-      g_started = false;
-      setPrompt();
-      displayPrompt();
-    }
-
-    var textArea = document.getElementById("textarea");
-    textArea.value = '';
-
-  } else {
-    if (g_lost) {
-      g_lost = false;
-      g_startTime = now();
-    }
-    
-    elem.style.backgroundColor = 'green';
-    elem.style.width = ((g_timeLimit - timeSinceLast) / g_timeLimit) * 100 + '%';
-  }
-}
-
-function ObserveInputValue(value) {
-  timeLimitSetting = document.getElementById('timeInput').value;
-
-  if (!isNaN(timeLimitSetting)) {
-    g_timeLimit = parseInt(timeLimitSetting, 10) * 1000;
-  } else {
-    g_timeLimit = 3 * 1000;
-  }
-
-  var nowMillis = now();
-  if (g_text != value) {
-    if (!g_started) {
-      g_startTime = now();
-    }
-    g_started = true;
-
-    if (value > g_text || (g_backspacesCount && !g_lost)) {
-      g_timeOfLast = nowMillis;
-    }
-  }
-
-  if (g_started) {
-    setBar(nowMillis);
-  }
-
-  g_text = value;
-} 
-
-setInterval(function() { ObserveInputValue($('#textarea').val()); }, 100);
 </script>
 </body>
 </html>
