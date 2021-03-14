@@ -880,6 +880,8 @@ there.
       <strong>Randomly Select Character:</strong> <input type="checkbox" id="randomCharacter" onclick="toggleRandomCharacter()"/>
       <br />
       <strong>Cycle Through Characters:</strong> <input type="checkbox" id="roundRobinCharacter" onclick="toggleCycleCharacter()" checked="true"/>
+      <br />
+      <strong>Dark Theme:</strong> <input onclick='toggleStyle()' type="checkbox"/>
   </div>
       <div style="display:inline-block;">
         <a href="#" download>Download</a> this webpage and use it offline.
@@ -974,20 +976,17 @@ function toggleStyle() {
   g_darkTheme = !g_darkTheme;
   var textArea = document.getElementById('textarea');
   var settingsContainer = document.getElementById('settings');
-  var timeInput = document.getElementById('timeInput');
 
   if (g_darkTheme) {
     document.body.style.backgroundColor = '#383838';
     document.body.style.color = 'white';
     settingsContainer.style.border = '1px solid white';
     textArea.style.backgroundColor = '#404040';
-    timeInput.style.backgroundColor = '#404040';
   } else {
     document.body.style.backgroundColor = 'white';
     document.body.style.color = '#222';
     settingsContainer.style.border = '1px solid black';
     textArea.style.backgroundColor = 'white';
-    timeInput.style.backgroundColor = 'white';
   }
 }
 
