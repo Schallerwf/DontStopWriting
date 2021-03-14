@@ -979,12 +979,14 @@ function toggleStyle() {
 
   if (g_darkTheme) {
     document.body.style.backgroundColor = '#383838';
-    document.body.style.color = 'white';
+    textArea.style.backgroundColor = '#383838';
+    textArea.style.color = 'white';
     settingsContainer.style.border = '1px solid white';
     textArea.style.backgroundColor = '#404040';
   } else {
     document.body.style.backgroundColor = 'white';
     document.body.style.color = '#222';
+    textArea.style.color = 'black';
     settingsContainer.style.border = '1px solid black';
     textArea.style.backgroundColor = 'white';
   }
